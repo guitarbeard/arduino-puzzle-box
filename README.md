@@ -8,5 +8,5 @@ a puzzle box powered by arduino
 4. Position tilt sensor to correct position for 2 seconds
 
 ## Box opens
-Using a servo, the box becomes unlocks itself
+Using a servo, the box unlocks itself
 
