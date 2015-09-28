@@ -1,5 +1,8 @@
 # arduino-puzzle-box
-a puzzle box powered by arduino
+- A puzzle box powered by arduino
+- While performing a correct task, a color changing LED will flicker
+- When a stage is completed, a green LED lights up
+- When all stages have been completed in the correct order, the color changing LED stays on and the box opens
 
 ## Stages:
 1. Push button for 2 seconds
@@ -8,5 +11,5 @@ a puzzle box powered by arduino
 4. Position tilt sensor to correct position for 2 seconds
 
 ## Box opens
-Using a servo, the box unlocks itself
+A servo turns on and unlocks the box.
 
