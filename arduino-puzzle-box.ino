@@ -1,3 +1,8 @@
+#include <Servo.h> 
+ 
+Servo myservo;  // create servo object to control a servo 
+int pos = 0;    // variable to store the servo position 
+
 const int led1Pin = 2;
 int led1State = LOW;
 
@@ -47,8 +52,19 @@ void setup()
   // initialize the pushbutton pin as an input:
   pinMode(buttonPin, INPUT);
 
+  myservo.attach(9);  // attaches the servo on pin 9 to the servo object 
+  myservo.write(pos);
   // initialize serial communication at 9600 bits per second:
   Serial.begin(9600);
+}
+
+void openBox()
+{
+  for(pos = 0; pos <= 180; pos += 1) // goes from 0 degrees to 180 degrees 
+    {                                  // in steps of 1 degree 
+      myservo.write(pos);              // tell servo to go to position in variable 'pos' 
+      delay(15);                       // waits 15ms for the servo to reach the position 
+    } 
 }
 
 void setLEDState()
@@ -60,6 +76,8 @@ void setLEDState()
 
   if(led1State == HIGH && led2State == HIGH && led3State == HIGH && led4State == HIGH){
     digitalWrite(activityPin, HIGH);
+    if(pos == 0)
+      openBox();
   }
     
 }
