@@ -17,11 +17,15 @@ long lastActivityTime = 0;
 
 // STAGE 1: Hold button for two seconds
 const int buttonPin = 7;
-int lastButtonState = LOW;
 
 // STAGE 2: Shine light for two seconds
 const int lightPin = 0;
-int lastLightState = LOW;
+
+// STAGE 3: Twist knob to correct position
+const int potPin = 1;
+
+// STAGE 4: Tilt box to correct position
+const int tiltPin = 2;
 
 void setup()
 {
@@ -54,7 +58,7 @@ void setLEDState()
   digitalWrite(led3Pin, led3State);
   digitalWrite(led4Pin, led4State);
 
-  if(led1State == HIGH && led2State == HIGH){
+  if(led1State == HIGH && led2State == HIGH && led3State == HIGH && led4State == HIGH){
     digitalWrite(activityPin, HIGH);
   }
     
@@ -103,8 +107,6 @@ void stageTwo()
   if(lightInput > 700){
     lightState = HIGH;
   }
-  
-  Serial.println(lightInput); //Write the value of the photoresistor to the serial monitor.
    
   if(lastActivityState != lightState && lightState == HIGH)
     lastActivityTime = millis();  
@@ -118,6 +120,48 @@ void stageTwo()
   }  
 }
 
+void stageThree()
+{ 
+  checkActivity();
+  int potInput = analogRead(potPin);
+  int potState = LOW;
+  if(770 < potInput && potInput < 780){
+    potState = HIGH;
+  }
+   
+  if(lastActivityState != potState && potState == HIGH)
+    lastActivityTime = millis();  
+    
+  lastActivityState = potState;
+
+  // check if the light is on for 3 seconds
+  if(millis() - lastActivityTime > 2000 && potState == HIGH){
+    led3State = HIGH;
+    resetLastActivity();
+  }  
+}
+
+void stageFour()
+{  
+  checkActivity();
+  int tiltInput = analogRead(tiltPin);
+  int tiltState = LOW;
+  if(tiltInput == 1023){
+    tiltState = HIGH;
+  }
+  
+  if(lastActivityState != tiltState && tiltState == HIGH)
+    lastActivityTime = millis();  
+    
+  lastActivityState = tiltState;
+
+  // check if the button is held for 2 seconds
+  if(millis() - lastActivityTime > 2000 && tiltState == HIGH){
+    led4State = HIGH; 
+    resetLastActivity();
+  }   
+}
+
 void loop()
 {
   setLEDState();
@@ -127,5 +171,11 @@ void loop()
     
   if(led2State == LOW && led1State == HIGH)
     stageTwo();
+    
+  if(led3State == LOW && led2State == HIGH && led1State == HIGH)
+    stageThree();
+
+  if(led4State == LOW && led3State == HIGH && led2State == HIGH && led1State == HIGH)
+    stageFour();
     
 }
