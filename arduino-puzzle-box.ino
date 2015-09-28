@@ -3,6 +3,12 @@
 Servo myservo;  // create servo object to control a servo 
 int pos = 0;    // variable to store the servo position 
 
+int speakerPin = 9;
+char notes[] = "gabygabyxzCDxzCDabywabywzCDEzCDEbywFCDEqywFGDEqi        azbC"; // a space represents a rest
+int length = sizeof(notes); // the number of notes
+int beats[] = { 1,1,1,1, 1,1,1,1, 1,1,1,1, 1,1,1,1, 1,1,1,1, 1,1,1,1, 1,1,1,1, 1,1,1,1, 1,1,1,1, 1,1,1,1, 1,1,1,1, 1,1,1,1, 1,1,1,1, 1,1,1,1, 2,3,3,16,};
+int tempo = 75;
+
 const int led1Pin = 2;
 int led1State = LOW;
 
@@ -32,6 +38,7 @@ const int potPin = 1;
 // STAGE 4: Tilt box to correct position
 const int tiltPin = 2;
 
+bool boxIsOpen = false;
 void setup()
 {
   pinMode(led1Pin, OUTPUT);
@@ -52,7 +59,7 @@ void setup()
   // initialize the pushbutton pin as an input:
   pinMode(buttonPin, INPUT);
 
-  myservo.attach(9);  // attaches the servo on pin 9 to the servo object 
+  myservo.attach(8);
   myservo.write(pos);
   // initialize serial communication at 9600 bits per second:
   Serial.begin(9600);
@@ -61,10 +68,10 @@ void setup()
 void openBox()
 {
   for(pos = 0; pos <= 180; pos += 1) // goes from 0 degrees to 180 degrees 
-    {                                  // in steps of 1 degree 
-      myservo.write(pos);              // tell servo to go to position in variable 'pos' 
-      delay(15);                       // waits 15ms for the servo to reach the position 
-    } 
+  {                                  // in steps of 1 degree 
+    myservo.write(pos);              // tell servo to go to position in variable 'pos' 
+    delay(15);                       // waits 15ms for the servo to reach the position 
+  } 
 }
 
 void setLEDState()
@@ -76,8 +83,25 @@ void setLEDState()
 
   if(led1State == HIGH && led2State == HIGH && led3State == HIGH && led4State == HIGH){
     digitalWrite(activityPin, HIGH);
-    if(pos == 0)
+    if(!boxIsOpen){
+      pinMode(speakerPin, OUTPUT);
+      for (int i = 0; i < length; i++) {
+        if (notes[i] == ' ') {
+          delay(beats[i] * tempo); // rest
+        } else {
+          playNote(notes[i], beats[i] * tempo);
+        }
+        
+        // pause between notes
+        delay(tempo / 2); 
+      }
+      
+      delay(100);
       openBox();
+      boxIsOpen = true;
+    }else{
+      myservo.detach();  
+    }
   }
     
 }
@@ -97,6 +121,28 @@ void resetLastActivity()
   // reset last activity state and time
   lastActivityState = LOW;
   lastActivityTime = 0;
+}
+
+void playTone(int tone, int duration) {
+  for (long i = 0; i < duration * 1000L; i += tone * 2) {
+    digitalWrite(speakerPin, HIGH);
+    delayMicroseconds(tone);
+    digitalWrite(speakerPin, LOW);
+    delayMicroseconds(tone);
+  }
+}
+
+void playNote(char note, int duration) {
+  char names[] = { 'c', 'd', 'e', 'f', 'g', 'x', 'a', 'z', 'b', 'C', 'y', 'D', 'w', 'E', 'F', 'q', 'G', 'i' };
+  // c=C4, C = C5. These values have been tuned.
+  int tones[] = { 1898, 1690, 1500, 1420, 1265, 1194, 1126, 1063, 1001, 947, 893, 843, 795, 749, 710, 668, 630, 594 };
+   
+  // play the tone corresponding to the note name
+  for (int i = 0; i < 18; i++) {
+    if (names[i] == note) {
+      playTone(tones[i], duration);
+    }
+  }
 }
 
 void stageOne()
